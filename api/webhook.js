@@ -55,27 +55,25 @@ async function handleEvent(event) {
 
 // 呼叫 mediastack 抓新聞
 async function getNewsHeadlines() {
-  const apiKey = process.env.MEDIASTACK_API_KEY;
+  const apiKey = process.env.NEWSAPI_KEY;
   if (!apiKey) {
-    console.error('MEDIASTACK_API_KEY 未設定');
+    console.error('NEWSAPI_KEY 未設定');
     return '目前新聞服務暫時無法使用，請稍後再試。';
   }
 
   try {
-    const response = await axios.get('http://api.mediastack.com/v1/news', {
+    const response = await axios.get('https://newsapi.org/v2/top-headlines', {
       params: {
-        access_key: apiKey,
-        countries: 'us,gb,jp,de,tw,cn',        // 美國 + 英國
-        languages: 'en,zh',           // 英文
-        categories: 'general',     // 一般新聞
-        sort: 'published_desc',    // 新到舊
-        limit: 5,                  // 只抓 5 則
+        apiKey,
+        language: 'en', // 英文新聞
+        pageSize: 5,    // 只抓 5 則
+        // 指定幾家主流媒體（不能和 country 一起用）
+        sources: 'associated-press,bbc-news,cnn,reuters,the-washington-post',
       },
       timeout: 5000,
     });
 
-    const data = response.data;
-    const articles = data.data || [];
+    const articles = response.data.articles || [];
 
     if (!articles.length) {
       return '目前抓不到國際頭條，等一下再試試看。';
@@ -85,7 +83,7 @@ async function getNewsHeadlines() {
 
     articles.forEach((article, index) => {
       const title = article.title || '（無標題）';
-      const source = article.source || '';
+      const source = (article.source && article.source.name) || '';
       const url = article.url || '';
 
       text += `\n${index + 1}. ${title}\n`;
@@ -95,7 +93,7 @@ async function getNewsHeadlines() {
 
     return text;
   } catch (err) {
-    console.error('取得新聞時發生錯誤：', err.message);
+    console.error('取得新聞時發生錯誤（NewsAPI）：', err.response?.data || err.message);
     return '抓取新聞時發生錯誤，請稍後再試。';
   }
 }

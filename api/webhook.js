@@ -65,8 +65,8 @@ async function getNewsHeadlines() {
     const response = await axios.get('http://api.mediastack.com/v1/news', {
       params: {
         access_key: apiKey,
-        countries: 'us,gb',        // 美國 + 英國
-        languages: 'en',           // 英文
+        countries: 'us,gb,jp,de,tw,cn',        // 美國 + 英國
+        languages: 'en,zh',           // 英文
         categories: 'general',     // 一般新聞
         sort: 'published_desc',    // 新到舊
         limit: 5,                  // 只抓 5 則

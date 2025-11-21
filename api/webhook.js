@@ -145,7 +145,10 @@ async function getNewsHeadlines(topic = 'top') {
       if (source) text += `來源：${source}\n`;
       if (urlLink) text += `${urlLink}\n`;
     });
-
+    
+// 在最後加上瀏覽器翻譯小提示
+    text += '\n——\n👉 點開連結後，可用瀏覽器的「翻譯此頁」功能看中文';
+    
     return text;
   } catch (err) {
     console.error('取得新聞時發生錯誤（NewsAPI）：', err.response?.data || err.message);

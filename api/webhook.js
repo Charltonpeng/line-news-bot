@@ -75,7 +75,8 @@ async function handleEvent(event) {
 
 
 // 呼叫 mediastack 抓新聞
-async function getNewsHeadlines() {
+// 用 NewsAPI 抓新聞
+async function getNewsHeadlines(topic = 'top') {
   const apiKey = process.env.NEWSAPI_KEY;
   if (!apiKey) {
     console.error('NEWSAPI_KEY 未設定');
@@ -83,24 +84,45 @@ async function getNewsHeadlines() {
   }
 
   try {
+    // 共用查詢參數
+    const params = {
+      apiKey,
+      language: 'en', // 英文新聞
+      pageSize: 5,    // 只抓 5 則
+      // 指定幾家主流媒體（不能和 country 一起用）
+      sources: 'associated-press,bbc-news,cnn,reuters,the-washington-post',
+    };
+
+    // 依照不同主題，加上關鍵字過濾
+    if (topic === 'politics') {
+      // 政治相關
+      params.q = 'politics OR election OR government';
+    } else if (topic === 'business') {
+      // 商業／金融相關
+      params.q = 'business OR finance OR market OR economy';
+    }
+    // topic === 'top' 的時候，不加 q，純看各家媒體頭條
+
     const response = await axios.get('https://newsapi.org/v2/top-headlines', {
-      params: {
-        apiKey,
-        language: 'en', // 英文新聞
-        pageSize: 5,    // 只抓 5 則
-        // 指定幾家主流媒體（不能和 country 一起用）
-        sources: 'associated-press,bbc-news,cnn,reuters,the-washington-post',
-      },
+      params,
       timeout: 5000,
     });
 
     const articles = response.data.articles || [];
 
     if (!articles.length) {
-      return '目前抓不到國際頭條，等一下再試試看。';
+      return '目前抓不到符合條件的新聞，等一下再試試看。';
     }
 
-    let text = '🌐 最新國際頭條：\n';
+    // 不同主題用不同開頭
+    let titlePrefix = '🌐 最新國際頭條：\n';
+    if (topic === 'politics') {
+      titlePrefix = '🗳 最新國際政治：\n';
+    } else if (topic === 'business') {
+      titlePrefix = '💹 最新商業／金融：\n';
+    }
+
+    let text = titlePrefix;
 
     articles.forEach((article, index) => {
       const title = article.title || '（無標題）';

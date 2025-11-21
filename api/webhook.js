@@ -74,7 +74,6 @@ async function handleEvent(event) {
 }
 
 
-// 呼叫 mediastack 抓新聞
 // 用 NewsAPI 抓新聞
 async function getNewsHeadlines(topic = 'top') {
   const apiKey = process.env.NEWSAPI_KEY;
@@ -87,23 +86,28 @@ async function getNewsHeadlines(topic = 'top') {
     // 共用查詢參數
     const params = {
       apiKey,
-      language: 'en', // 英文新聞
-      pageSize: 5,    // 只抓 5 則
-      // 指定幾家主流媒體（不能和 country 一起用）
-      sources: 'associated-press,bbc-news,cnn,reuters,the-washington-post',
+      language: 'en',   // 英文新聞
+      pageSize: 5,      // 只抓 5 則
     };
 
-    // 依照不同主題，加上關鍵字過濾
-    if (topic === 'politics') {
-      // 政治相關
-      params.q = 'politics OR election OR government';
-    } else if (topic === 'business') {
-      // 商業／金融相關
-      params.q = 'business OR finance OR market OR economy';
-    }
-    // topic === 'top' 的時候，不加 q，純看各家媒體頭條
+    let url = 'https://newsapi.org/v2/top-headlines';
 
-    const response = await axios.get('https://newsapi.org/v2/top-headlines', {
+    if (topic === 'top') {
+      // 綜合國際頭條：用 top-headlines + 指定幾家主流媒體
+      params.sources = 'associated-press,bbc-news,cnn,reuters,the-washington-post';
+    } else if (topic === 'politics') {
+      // 政治：改用 everything，全庫搜尋政治關鍵字
+      url = 'https://newsapi.org/v2/everything';
+      params.q = 'politics OR election OR government OR parliament';
+      params.sortBy = 'publishedAt';
+    } else if (topic === 'business') {
+      // 商業／金融：改用 everything，全庫搜尋金融關鍵字
+      url = 'https://newsapi.org/v2/everything';
+      params.q = 'business OR finance OR market OR economy OR stock OR investment';
+      params.sortBy = 'publishedAt';
+    }
+
+    const response = await axios.get(url, {
       params,
       timeout: 5000,
     });
@@ -111,7 +115,10 @@ async function getNewsHeadlines(topic = 'top') {
     const articles = response.data.articles || [];
 
     if (!articles.length) {
-      return '目前抓不到符合條件的新聞，等一下再試試看。';
+      let desc = '國際頭條';
+      if (topic === 'politics') desc = '政治相關新聞';
+      if (topic === 'business') desc = '商業／金融相關新聞';
+      return `目前抓不到符合「${desc}」的新聞，等一下再試試看。`;
     }
 
     // 不同主題用不同開頭
@@ -127,11 +134,11 @@ async function getNewsHeadlines(topic = 'top') {
     articles.forEach((article, index) => {
       const title = article.title || '（無標題）';
       const source = (article.source && article.source.name) || '';
-      const url = article.url || '';
+      const urlLink = article.url || '';
 
       text += `\n${index + 1}. ${title}\n`;
       if (source) text += `來源：${source}\n`;
-      if (url) text += `${url}\n`;
+      if (urlLink) text += `${urlLink}\n`;
     });
 
     return text;

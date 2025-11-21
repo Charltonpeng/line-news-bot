@@ -2,7 +2,7 @@ const line = require('@line/bot-sdk');
 const axios = require('axios');
 
 // 這裡新增一行：主流媒體清單
-const MAINSTREAM_SOURCES = 'associated-press,bbc-news,cnn,reuters,the-washington-post';
+const MAINSTREAM_SOURCES = 'associated-press,bbc-news,cnn,reuters,the-washington-post,bloomberg,financial-times';
 
 // 從環境變數讀取 LINE 設定
 const config = {

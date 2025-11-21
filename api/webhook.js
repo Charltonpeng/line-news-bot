@@ -1,6 +1,9 @@
 const line = require('@line/bot-sdk');
 const axios = require('axios');
 
+// 這裡新增一行：主流媒體清單
+const MAINSTREAM_SOURCES = 'associated-press,bbc-news,cnn,reuters,the-washington-post';
+
 // 從環境變數讀取 LINE 設定
 const config = {
   channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN,
@@ -94,15 +97,17 @@ async function getNewsHeadlines(topic = 'top') {
 
     if (topic === 'top') {
       // 綜合國際頭條：用 top-headlines + 指定幾家主流媒體
-      params.sources = 'associated-press,bbc-news,cnn,reuters,the-washington-post';
+      params.sources = MAINSTREAM_SOURCES;
     } else if (topic === 'politics') {
-      // 政治：改用 everything，全庫搜尋政治關鍵字
+      // 政治：改用 everything，全庫搜尋政治關鍵字，但來源限制在主流媒體
       url = 'https://newsapi.org/v2/everything';
+      params.sources = MAINSTREAM_SOURCES;
       params.q = 'politics OR election OR government OR parliament';
       params.sortBy = 'publishedAt';
     } else if (topic === 'business') {
-      // 商業／金融：改用 everything，全庫搜尋金融關鍵字
+      // 商業／金融：改用 everything，全庫搜尋金融關鍵字，但來源限制在主流媒體
       url = 'https://newsapi.org/v2/everything';
+      params.sources = MAINSTREAM_SOURCES;
       params.q = 'business OR finance OR market OR economy OR stock OR investment';
       params.sortBy = 'publishedAt';
     }

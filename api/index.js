@@ -10,6 +10,10 @@ const config = {
 
 const app = express();
 
+app.get('/webhook', (req, res) => {
+  res.status(200).send('OK');
+});
+
 // LINE Webhook 入口
 app.post('/webhook', line.middleware(config), (req, res) => {
   Promise

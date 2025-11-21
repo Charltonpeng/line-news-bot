@@ -89,7 +89,7 @@ async function getNewsHeadlines(topic = 'top') {
     // 共用查詢參數
     const params = {
       apiKey,
-      language: 'en,zh',   // 英文新聞
+      language: 'en',   // 英文新聞
       pageSize: 8,      // 只抓 8 則
     };
 

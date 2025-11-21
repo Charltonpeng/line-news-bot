@@ -89,8 +89,8 @@ async function getNewsHeadlines(topic = 'top') {
     // 共用查詢參數
     const params = {
       apiKey,
-      language: 'en',   // 英文新聞
-      pageSize: 5,      // 只抓 5 則
+      language: 'en,zh',   // 英文新聞
+      pageSize: 8,      // 只抓 8 則
     };
 
     let url = 'https://newsapi.org/v2/top-headlines';

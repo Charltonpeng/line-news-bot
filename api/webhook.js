@@ -28,23 +28,43 @@ module.exports = async (req, res) => {
 };
 
 // 處理每一個 LINE 事件
+// 處理每一個事件
 async function handleEvent(event) {
+  // 只處理文字訊息
   if (event.type !== 'message' || event.message.type !== 'text') {
     return;
   }
 
   const messageText = (event.message.text || '').trim();
+
+  let topic = null;
+
+  // 一般國際頭條
+  if (/^(頭條|國際新聞|news|國際)$/i.test(messageText)) {
+    topic = 'top';
+  }
+  // 政治新聞
+  else if (/^(政治|politics)$/i.test(messageText)) {
+    topic = 'politics';
+  }
+  // 商業／金融新聞
+  else if (/^(business|商業|金融|finance)$/i.test(messageText)) {
+    topic = 'business';
+  }
+
   let replyText;
 
-  if (/^(頭條|國際新聞|news|國際)$/i.test(messageText)) {
-    replyText = await getNewsHeadlines();
+  if (topic) {
+    // 有對到其中一個指令，就去抓對應新聞
+    replyText = await getNewsHeadlines(topic);
   } else {
+    // 其他文字就原樣回覆 + 教他可以輸入什麼
     replyText =
       `你剛剛說：「${messageText}」\n\n` +
-      `如果想看最新國際頭條，可以輸入：\n` +
-      `- 頭條\n` +
-      `- 國際新聞\n` +
-      `- news`;
+      `目前支援的指令有：\n` +
+      `- 頭條 / 國際新聞 / news / 國際（綜合國際頭條）\n` +
+      `- 政治 / politics（國際政治）\n` +
+      `- 金融 / business（商業／金融）`;
   }
 
   await client.replyMessage(event.replyToken, {
@@ -52,6 +72,7 @@ async function handleEvent(event) {
     text: replyText,
   });
 }
+
 
 // 呼叫 mediastack 抓新聞
 async function getNewsHeadlines() {
